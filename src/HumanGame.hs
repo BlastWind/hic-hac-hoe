@@ -11,7 +11,6 @@ import           Brick                          ( App(..)
                                                 , neverShowCursor
                                                 )
 import           Control.Monad                  ( void )
-import           Graphics.Vty
 import qualified Graphics.Vty                  as V
 import           Logic
 import           Types
@@ -36,7 +35,8 @@ handleEvent g (VtyEvent (V.EvKey V.KLeft [])) =
     continue $ moveHighlight g Types.Left
 handleEvent g (VtyEvent (V.EvKey V.KRight [])) =
     continue $ moveHighlight g Types.Right
-
+handleEvent g (VtyEvent (V.EvKey V.KEnter [])) =
+    continue $ plantMove g
 handleEvent g _ = continue g
 
 initGame :: IO Game
