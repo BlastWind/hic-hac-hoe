@@ -9,14 +9,16 @@ import           Brick                          ( AttrMap
                                                 )
 import qualified Brick                         as U
 import qualified Brick.Widgets.Border          as B
+import           Brick.Widgets.Border           ( borderAttr )
 import qualified Brick.Widgets.Border.Style    as BS
 import           Brick.Widgets.Center
 import           Brick.Widgets.Core
 import qualified Graphics.Vty                  as V
 import           Types
 
-highlightBorderAttr :: AttrName
+highlightBorderAttr, defaultAttr :: AttrName
 highlightBorderAttr = attrName "highlightBorderAttr"
+defaultAttr = attrName "default"
 
 tictactoeAttrMap :: AttrMap
 tictactoeAttrMap = attrMap V.defAttr [(highlightBorderAttr, U.fg V.cyan)]
@@ -41,14 +43,16 @@ drawGrid g =
               | (tile, colInd) <- zip rowTiles [(0 :: Int) ..]
               ]
     makeCellWidget tile rowInd colInd =
-        B.border
+        (if shouldHighlight
+                then overrideAttr borderAttr highlightBorderAttr
+                else id
+            )
+            $ B.border
             $ hCenter
             $ padAll 1
             $ str
-            $ (if (rowInd, colInd) == _highlightLocation g
-                  then "highlight"
-                  else printTile tile
-              )
+            $ printTile tile
+        where shouldHighlight = (rowInd, colInd) == _highlightLocation g
 
 drawUI :: Game -> [Widget ()]
 drawUI g = [center $ drawGrid g]
