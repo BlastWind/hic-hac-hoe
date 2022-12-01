@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      HumanGame
       Lib
       Temp
   other-modules:
@@ -34,6 +35,8 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , brick
+    , vty
   default-language: Haskell2010
 
 executable hic-hac-hoe-exe
@@ -45,7 +48,9 @@ executable hic-hac-hoe-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , brick
     , hic-hac-hoe
+    , vty
   default-language: Haskell2010
 
 test-suite hic-hac-hoe-test
@@ -58,5 +63,7 @@ test-suite hic-hac-hoe-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , brick
     , hic-hac-hoe
+    , vty
   default-language: Haskell2010
