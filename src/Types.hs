@@ -1,5 +1,5 @@
 module Types (module Types) where
-    data Player = Player1 | Player2
+    data Player = Player1 | Player2 deriving (Show)
     data TileType = O | X
     type Tile = Maybe TileType
     type Grid = [[Tile]]

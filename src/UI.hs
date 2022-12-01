@@ -26,15 +26,16 @@ tictactoeAttrMap = attrMap V.defAttr [(highlightBorderAttr, U.fg V.cyan)]
 printTile :: Tile -> String
 printTile = maybe " " show
 
+-- Can't just take in Grid because drawGrid also depends on highlightLocation
 drawGrid :: Game -> Widget ()
-drawGrid g =
+drawGrid game =
     withBorderStyle BS.unicodeBold
         $ B.borderWithLabel (str "Tic Tac Toe")
         $ vBox columnWidgets
   where
     columnWidgets =
         [ makeRowWidgets rowTiles rowInd
-        | (rowTiles, rowInd) <- zip (_grid g) [(0 :: Int) ..]
+        | (rowTiles, rowInd) <- zip (_grid game) [(0 :: Int) ..]
         ]
     makeRowWidgets rowTiles rowInd =
         hLimit 27
@@ -52,7 +53,11 @@ drawGrid g =
             $ padAll 1
             $ str
             $ printTile tile
-        where shouldHighlight = (rowInd, colInd) == _highlightLocation g
+        where shouldHighlight = (rowInd, colInd) == _highlightLocation game
+
+drawPlayerTurn :: Player -> Widget() 
+drawPlayerTurn player = B.borderWithLabel (str "Current") $ padAll 1 $ str $ show player
+
 
 drawUI :: Game -> [Widget ()]
-drawUI g = [center $ drawGrid g]
+drawUI game = [center $ drawPlayerTurn (_curPlayer game) <+> drawGrid game]
