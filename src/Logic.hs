@@ -12,7 +12,7 @@ directionVector Types.Left  = (0, -1)
 boundLoc :: Location -> Location
 boundLoc (x, y) = (boundDigit x, boundDigit y)  where
     boundDigit digit | digit < 0 = 0
-                     | digit > 2 = 0
+                     | digit > 2 = 2
                      | otherwise = digit
 
 addTwoTuples :: (Int, Int) -> (Int, Int) -> (Int, Int)
