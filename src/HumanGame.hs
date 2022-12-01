@@ -1,20 +1,19 @@
 module HumanGame where
     import Brick
-    import Data.Bool (bool)
     import Graphics.Vty
     import qualified Graphics.Vty as V
     import Control.Monad (void)
     import qualified Brick.Widgets.Border.Style as BS
     import qualified Brick.Widgets.Border as B
-    import qualified Brick.Widgets.Center as C
     import Brick.Widgets.Center
-    
+
     data Player = Player1 | Player2
     data TileType = O | X
     type Tile = Maybe TileType
     type Grid = [[Tile]]
 
-    data Game = Game { _grid :: Grid, _curPlayer :: Player, _done :: Bool }
+    type Coordinate = Int
+    data Game = Game { _grid :: Grid, _highlightLocation :: (Coordinate, Coordinate), _curPlayer :: Player, _done :: Bool }
 
     app :: App Game () ()
     app = App { appDraw = drawUI
@@ -43,8 +42,9 @@ module HumanGame where
         $ B.borderWithLabel (str "Tic Tac Toe")
         $ vBox columnWidgets
         where
-            columnWidgets = [makeRowWidget r | r <- _grid g]
-            makeRowWidget row = hLimit 27 $ hBox $ [B.border $ hCenter $ padAll 1 $ str $ printTile tile | tile <- row]
+            columnWidgets = [makeRowWidget rowTiles rowInd | (rowTiles, rowInd) <- zip (_grid g) [(0 :: Int)..]]
+            makeRowWidget row rowInd = hLimit 27 $ hBox $ [B.border $ hCenter $ padAll 1 $ str $ (if (rowInd, colInd) == _highlightLocation g then "highlight" else printTile tile) | (tile, colInd) <- zip row [(0 :: Int)..]]
+
 
 
     initGame :: IO Game
@@ -53,6 +53,7 @@ module HumanGame where
             _grid = [[Just O, Just O, Nothing],
             [Just O, Nothing, Just X],
             [Just O, Just O, Nothing]],
+            _highlightLocation = (0, 0),
             _curPlayer = Player1,
             _done = False
         }
