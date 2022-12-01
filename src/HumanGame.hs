@@ -13,7 +13,8 @@ module HumanGame where
     type Grid = [[Tile]]
 
     type Coordinate = Int
-    data Game = Game { _grid :: Grid, _highlightLocation :: (Coordinate, Coordinate), _curPlayer :: Player, _done :: Bool }
+    type Location = (Coordinate, Coordinate)
+    data Game = Game { _grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _done :: Bool }
 
     app :: App Game () ()
     app = App { appDraw = drawUI
@@ -43,17 +44,22 @@ module HumanGame where
     -- resize 
     -- boundResize :: (Coordinate, Coordinate) -> (Coordinate, Coordinate) -> (Coordinate, Coordinate)
 
+    boundLoc :: Location -> Location
+    boundLoc (x, y) |
+        x < 0 && y < 0 = (0, 0)    |
+        x < 0          = (0, y)    |
+                 y < 0 = (x, 0)    | 
+        x > 2 && y > 2 = (2, 2)    |
+        x > 2          = (2, y)    | 
+                 y > 2 = (x, 2)    | 
+       otherwise       = (x, y)
+
+
     addTwoTuples :: (Int, Int) -> (Int, Int) -> (Int, Int)
     addTwoTuples (x, y) (u, v) = (x+u, y+v)
 
     moveHighlight :: Game -> Direction -> Game 
-    moveHighlight g = f (_highlightLocation g)
-        where
-            f (x, y) HumanGame.Up = g { _highlightLocation = addTwoTuples (x, y) (directionVector HumanGame.Up) }
-            f (x, y) HumanGame.Right = g { _highlightLocation = addTwoTuples (x, y) (directionVector HumanGame.Right) }
-            f (x, y) HumanGame.Down = g { _highlightLocation = addTwoTuples (x, y) (directionVector HumanGame.Down) }
-            f (x, y) HumanGame.Left = g { _highlightLocation = addTwoTuples (x, y) (directionVector HumanGame.Left) }
-
+    moveHighlight g dir = g { _highlightLocation = boundLoc $ addTwoTuples (directionVector dir) (_highlightLocation g) }
 
     drawUI :: Game -> [Widget ()]
     drawUI g = [center $ drawGrid g]
