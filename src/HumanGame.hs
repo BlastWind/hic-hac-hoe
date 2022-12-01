@@ -41,9 +41,9 @@ handleEvent g _ = continue g
 
 initGame :: IO Game
 initGame = return $ Game
-    { _grid              = [ [Just O, Just O, Nothing]
-                           , [Just O, Nothing, Just X]
-                           , [Just O, Just O, Nothing]
+    { _grid              = [ [Nothing, Nothing, Nothing]
+                           , [Nothing, Nothing, Nothing]
+                           , [Nothing, Nothing, Nothing]
                            ]
     , _highlightLocation = (1, 0)
     , _curPlayer         = Player1
