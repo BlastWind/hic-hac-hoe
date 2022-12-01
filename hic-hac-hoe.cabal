@@ -26,8 +26,9 @@ source-repository head
 library
   exposed-modules:
       HumanGame
-      Lib
-      Temp
+      Logic
+      Types
+      UI
   other-modules:
       Paths_hic_hac_hoe
   hs-source-dirs:
