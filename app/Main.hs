@@ -1,18 +1,8 @@
 module Main (main) where
 
 import Lib
+import HumanGame (startHumanGame)
 
 main :: IO ()
-main = someFunc
+main = startHumanGame
 
-
-alternateMove :: Cell -> Cell 
-alternateMove O = X 
-alternateMove X = O
-
--- Set board size 
--- Continously ask for where to set tile until win 
-	-- if not empty, ask again 
-	-- if empty, place move and alternate move
-
-	
