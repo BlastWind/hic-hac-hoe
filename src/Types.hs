@@ -6,7 +6,12 @@ module Types (module Types) where
 
     type Coordinate = Int
     type Location = (Coordinate, Coordinate)
-    data Game = Game { _grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _done :: Bool }
+    type Player1Score = Int 
+    type Player2Score = Int
+    type MatchesPlayed = Int
+    type Stat = (Player1Score, Player2Score, MatchesPlayed)
+    
+    data Game = Game { _grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _done :: Bool, _stat :: Stat }
     data Direction = Up | Down | Left | Right
 
     instance Show TileType where

@@ -5,7 +5,7 @@ import           Brick                          ( AttrMap
                                                 , AttrName
                                                 , Widget
                                                 , attrMap
-                                                , attrName
+                                                , attrName, Padding (Pad)
                                                 )
 import qualified Brick                         as U
 import qualified Brick.Widgets.Border          as B
@@ -55,9 +55,17 @@ drawGrid game =
             $ printTile tile
         where shouldHighlight = (rowInd, colInd) == _highlightLocation game
 
-drawPlayerTurn :: Player -> Widget() 
-drawPlayerTurn player = B.borderWithLabel (str "Current") $ padAll 1 $ str $ show player
+drawPlayerTurn :: Player -> Widget ()
+drawPlayerTurn player =
+    B.borderWithLabel (str "Current") $ padAll 1 $ str $ show player
 
+drawStat :: Stat -> Widget ()
+drawStat (player1Score, player2Score, matchesPlayed) =
+    B.borderWithLabel (str "Stats") $ padAll 1 $ hBox [ padRight (Pad 1) $ vBox [str "Player1 :", str "Player2 :", str "Played  :"], vBox [str $ show player1Score, str $ show player2Score, str $ show matchesPlayed] ]  
 
+    -- vBox [hBox [str "Player 1:", str $ show player1Score], hBox [str "Player 2:", str $ show player2Score], hBox [str "Played:", str $ show matchesPlayed]] 
 drawUI :: Game -> [Widget ()]
-drawUI game = [center $ drawPlayerTurn (_curPlayer game) <+> drawGrid game]
+drawUI game =
+    [ center $ drawPlayerTurn (_curPlayer game) <+> drawGrid game <+> drawStat
+          (_stat game)
+    ]

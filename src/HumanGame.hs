@@ -48,6 +48,7 @@ initGame = return $ Game
     , _highlightLocation = (1, 0)
     , _curPlayer         = Player1
     , _done              = False
+    , _stat              = (0, 0, 0)
     }
 
 startHumanGame :: IO ()
