@@ -34,10 +34,10 @@ handleEvent g (VtyEvent (V.EvKey key [])) = case _screen g of
       _  -> continue g
     Play -> case key of 
       KEnter -> continue $ plantMove g
-      KLeft -> continue $ moveHighlight g Types.Left
-      KRight -> continue $ moveHighlight g Types.Right
-      KUp -> continue $ moveHighlight g Types.Up
-      KDown -> continue $ moveHighlight g Types.Down
+      KLeft -> continue $ moveHighlight g Types.GameLeft
+      KRight -> continue $ moveHighlight g Types.GameRight
+      KUp -> continue $ moveHighlight g Types.GameUp
+      KDown -> continue $ moveHighlight g Types.GameDown
       _ -> continue g
     (Pause _) -> continue g
 handleEvent g _ = continue g

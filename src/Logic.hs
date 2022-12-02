@@ -13,11 +13,11 @@ initialGrid :: Grid
 --   [Nothing, Nothing, Nothing] ]
 initialGrid = replicate 3 (replicate 3 Nothing)
 
-directionVector :: Direction -> (Coordinate, Coordinate)
-directionVector Types.Up    = (-1, 0)
-directionVector Types.Right = (0, 1)
-directionVector Types.Down  = (1, 0)
-directionVector Types.Left  = (0, -1)
+directionVector :: GameDirection -> (Coordinate, Coordinate)
+directionVector Types.GameUp    = (-1, 0)
+directionVector Types.GameRight = (0, 1)
+directionVector Types.GameDown  = (1, 0)
+directionVector Types.GameLeft  = (0, -1)
 
 boundLoc :: Location -> Location
 boundLoc (x, y) = (boundDigit x, boundDigit y)  where
@@ -28,7 +28,7 @@ boundLoc (x, y) = (boundDigit x, boundDigit y)  where
 addTwoTuples :: (Int, Int) -> (Int, Int) -> (Int, Int)
 addTwoTuples (x, y) (u, v) = (x + u, y + v)
 
-moveHighlight :: Game -> Direction -> Game
+moveHighlight :: Game -> GameDirection -> Game
 moveHighlight g dir = g
     { _highlightLocation = boundLoc $ addTwoTuples (directionVector dir)
                                                    (_highlightLocation g)
@@ -101,6 +101,7 @@ enumerate = zip [0 ..]
 
 
 -------------------------- Home screen --------------------------
-moveHomeScreenArrow :: Game -> Direction -> Game
-moveHomeScreenArrow g Up = g { _screen = Home 2 }
-moveHomeScreenArrow _ _ = undefined
+data MenuDirection = MenuUp | MenuDown
+moveHomeScreenArrow :: Game -> MenuDirection -> Game
+moveHomeScreenArrow g MenuUp = g { _screen = Home 0 }
+moveHomeScreenArrow g MenuDown = g { _screen = Home 1 }

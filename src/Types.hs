@@ -17,7 +17,7 @@ module Types (module Types) where
     data Screen = Home ScreenItemIndex | Play | Pause ScreenItemIndex
 
     data Game = Game { _grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _done :: Bool, _stat :: Stat, _screen :: Screen }
-    data Direction = Up | Down | Left | Right
+    data GameDirection = GameUp | GameDown | GameLeft | GameRight
 
     class Togglable a where
         toggle :: a -> a
