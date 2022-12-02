@@ -1,6 +1,5 @@
 module HumanGame
   ( startHumanGame
-  , initialGrid
   ) where
 import           Brick                          ( App(..)
                                                 , BrickEvent(..)
@@ -8,13 +7,13 @@ import           Brick                          ( App(..)
                                                 , Next
                                                 , continue
                                                 , customMain
-                                                , halt
                                                 , neverShowCursor
                                                 )
 import           Control.Monad                  ( void )
 import qualified Graphics.Vty                  as V
 import           Graphics.Vty
 import           Logic
+import           TypeConstants
 import           Types
 import           UI
 
@@ -28,7 +27,7 @@ app = App { appDraw         = drawUI
           }
 
 handleEvent :: Game -> BrickEvent () () -> EventM () (Next Game)
-handleEvent g (VtyEvent (V.EvKey key [])) = case _screen g of
+handleEvent g (VtyEvent (V.EvKey key [])) = case _screen g of -- listen to different events and do different things with respect to Screen type
   (Home menuIndex menuItems menuItemActions) -> case key of
     KUp -> continue $ g
       { _screen = Home (bound (menuIndex - 1) 0 (length menuItems - 1))
@@ -53,51 +52,17 @@ handleEvent g (VtyEvent (V.EvKey key [])) = case _screen g of
   (Pause menuIndex menuItems menuItemActions) -> case key of
     KUp -> continue $ g
       { _screen = Pause (bound (menuIndex - 1) 0 (length menuItems - 1))
-                       menuItems
-                       menuItemActions
+                        menuItems
+                        menuItemActions
       }
     KDown -> continue $ g
       { _screen = Pause (bound (menuIndex + 1) 0 (length menuItems - 1))
-                       menuItems
-                       menuItemActions
+                        menuItems
+                        menuItemActions
       }
     KEnter -> (menuItemActions !! menuIndex) g
     _      -> continue g
 handleEvent g _ = continue g
-
-initialHomeScreen :: Screen
-initialHomeScreen = Home
-  { _curMenuItemIndex = 0
-  , _menuItems        = ["Play", "Quit"]
-  , _menuItemActions  = [const $ continue initialPlayScreenGame, halt]
-  }
-
-initialHomeGame :: Game
-initialHomeGame = Game { _grid              = initialGrid
-                       , _highlightLocation = (1, 0)
-                       , _curPlayer         = Player1
-                       , _done              = False
-                       , _stat              = (0, 0, 0)
-                       , _screen            = initialHomeScreen
-                       }
-
-initialPlayScreenGame :: Game
-initialPlayScreenGame = Game { _grid              = initialGrid
-                             , _highlightLocation = (1, 0)
-                             , _curPlayer         = Player1
-                             , _done              = False
-                             , _stat              = (0, 0, 0)
-                             , _screen            = Play
-                             }
-
-initialPauseScreen :: Screen
-initialPauseScreen = Pause
-  { _curMenuItemIndex = 0
-  , _menuItems        = ["Resume", "Return to Home"]
-  , _menuItemActions  = [ \g -> continue g { _screen = Play }
-                        , const $ continue initialHomeGame
-                        ]
-  }
 
 startHumanGame :: IO ()
 startHumanGame = do

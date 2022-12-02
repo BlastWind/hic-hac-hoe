@@ -27,6 +27,7 @@ library
   exposed-modules:
       HumanGame
       Logic
+      TypeConstants
       Types
       UI
   other-modules:

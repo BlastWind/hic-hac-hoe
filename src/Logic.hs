@@ -5,13 +5,8 @@ import           Data.List                      ( transpose )
 import           Data.Maybe                     ( isJust
                                                 , isNothing
                                                 )
+import           TypeConstants
 import           Types
-
-initialGrid :: Grid
--- [ [Nothing, Nothing, Nothing]
---   [Nothing, Nothing, Nothing]
---   [Nothing, Nothing, Nothing] ]
-initialGrid = replicate 3 (replicate 3 Nothing)
 
 directionVector :: GameDirection -> (Coordinate, Coordinate)
 directionVector Types.GameUp    = (-1, 0)
@@ -23,10 +18,9 @@ boundLoc :: Location -> Location
 boundLoc (x, y) = (bound x 0 2, bound y 0 2)
 
 bound :: Ord a => a -> a -> a -> a
-bound x lowerBound upperBound 
-    | x < lowerBound = lowerBound
-    | x > upperBound = upperBound 
-    | otherwise = x
+bound x lowerBound upperBound | x < lowerBound = lowerBound
+                              | x > upperBound = upperBound
+                              | otherwise      = x
 
 addTwoTuples :: (Int, Int) -> (Int, Int) -> (Int, Int)
 addTwoTuples (x, y) (u, v) = (x + u, y + v)
@@ -101,7 +95,3 @@ setAt xs i x = take i xs ++ [x] ++ drop (i + 1) xs
 
 enumerate :: [a] -> [(Int, a)]
 enumerate = zip [0 ..]
-
-
--------------------------- Home screen --------------------------
-data MenuDirection = MenuUp | MenuDown

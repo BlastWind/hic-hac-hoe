@@ -28,8 +28,7 @@ tictactoeAttrMap = attrMap V.defAttr [(highlightBorderAttr, U.fg V.cyan)]
 printTile :: Tile -> String
 printTile = maybe " " show
 
--- Can't just take in Grid because drawGrid also depends on highlightLocation
-drawGrid :: Game -> Widget ()
+drawGrid :: Game -> Widget () -- Can't just take in Grid because drawGrid also depends on highlightLocation
 drawGrid game =
     withBorderStyle BS.unicodeBold
         $ B.borderWithLabel (str "Tic Tac Toe")
@@ -78,38 +77,29 @@ drawStat (player1Score, player2Score, matchesPlayed) =
             ]
         ]
 
-homeMenuOptions :: [String]
-homeMenuOptions = ["Play", "Quit"]
-
-    -- vBox [hBox [str "Player 1:", str $ show player1Score], hBox [str "Player 2:", str $ show player2Score], hBox [str "Played:", str $ show matchesPlayed]] 
 drawUI :: Game -> [Widget ()]
 drawUI game = case _screen game of
     (Home itemInd options _) ->
-        [ center
-              $ hLimit 30
-              $ vLimit 20
-              $ B.border
-              $ padAll 2
-              $ vBox
-              $ [ str "Welcome to Hic Hac Hoe"
-                , padTop (Pad 1)
-                $ hCenter
-                $ B.borderWithLabel (str "Menu")
-                $ padLeftRight
-                      3
-                      (vBox
-                          (map
-                              ( padTopBottom 1
-                              . str
-                              . (\(ind, s) -> if ind == itemInd
-                                    then "-> " ++ s
-                                    else "   " ++ s -- still want to maintain spacing
-                                )
+        [ center $ hLimit 30 $ vLimit 20 $ B.border $ padAll 2 $ vBox
+              [ str "Welcome to Hic Hac Hoe"
+              , padTop (Pad 1)
+              $ hCenter
+              $ B.borderWithLabel (str "Menu")
+              $ padLeftRight
+                    3
+                    (vBox
+                        (map
+                            ( padTopBottom 1
+                            . str
+                            . (\(ind, s) -> if ind == itemInd
+                                  then "-> " ++ s
+                                  else "   " ++ s -- still want to maintain spacing
                               )
-                              (enumerate options)
-                          )
-                      )
-                ]
+                            )
+                            (enumerate options)
+                        )
+                    )
+              ]
         ]
     Play ->
         [ center
@@ -117,7 +107,7 @@ drawUI game = case _screen game of
               <+> drawGrid game
               <+> drawStat (_stat game)
         ]
-    (Pause itemInd options _) ->
+    (Pause itemInd options _) -> -- The Pause screen actually draws Play screen as well.
         [ center
               $   drawPlayerTurn (_curPlayer game)
               <+> (drawGrid game <=> B.borderWithLabel
