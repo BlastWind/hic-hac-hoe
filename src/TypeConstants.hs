@@ -21,6 +21,7 @@ initialHomeGame = Home
         { _curMenuItemIndex = 0
         , _menuItems        = ["Play", "Quit"]
         , _menuItemActions  = [const $ continue initialPlayScreenGame, halt]
+        , _arrowStatus      = On
         }
     )
 
@@ -38,6 +39,7 @@ pauseMenu = Menu
     { _curMenuItemIndex = 0
     , _menuItems        = ["Resume", "Return to Home"]
     , _menuItemActions  = [resumePlay, const $ continue initialHomeGame]
+    , _arrowStatus      = On
     }
 
 resumePlay :: Game -> EventM () (Next Game)

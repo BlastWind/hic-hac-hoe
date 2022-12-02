@@ -78,7 +78,7 @@ drawStat (player1Score, player2Score, matchesPlayed) =
         ]
 
 drawUI :: Game -> [Widget ()]
-drawUI (Home (HomeData (Menu itemInd options _))) =
+drawUI (Home (HomeData (Menu itemInd options _ _))) =
     [ center $ hLimit 30 $ vLimit 20 $ B.border $ padAll 2 $ vBox
           [ str "Welcome to Hic Hac Hoe"
           , padTop (Pad 1)
@@ -104,7 +104,7 @@ drawUI (Home (HomeData (Menu itemInd options _))) =
 drawUI (Play playData@(PlayData _ _ curPlayer stat)) =
     [center $ drawPlayerTurn curPlayer <+> drawGrid playData <+> drawStat stat]
 
-drawUI (Pause (PauseData playData@(PlayData _ _ curPlayer stat) (Menu itemInd options _)))
+drawUI (Pause (PauseData playData@(PlayData _ _ curPlayer stat) (Menu itemInd options _ _)))
     = [ center
             $   drawPlayerTurn curPlayer
             <+> (drawGrid playData <=> B.borderWithLabel

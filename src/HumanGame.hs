@@ -22,11 +22,12 @@ import qualified Graphics.Vty                  as V
 import           Graphics.Vty
 import           Logic
 import           TypeConstants
-import           Types                          ( Game(..)
+import           Types                          ( FlickerArrow(FlickerArrow)
+                                                , Game(..)
                                                 , HomeData(..)
                                                 , Menu(..)
-                                                , PauseData(PauseData)
-                                                , FlickerArrow(FlickerArrow)
+                                                , PauseData(PauseData, _menu)
+                                                , Togglable(toggle)
                                                 )
 import qualified Types                         as PlayDirection
 import           UI
@@ -41,22 +42,35 @@ app = App { appDraw         = drawUI
           }
 
 handleEvent :: Game -> BrickEvent () FlickerArrow -> EventM () (Next Game)
--- also handle when FlickerArrow comes in (flicker the arrow!)
-handleEvent game (AppEvent FlickerArrow) = do
-  liftIO $ putStrLn "df"
-  continue game
 
-handleEvent game@(Home (HomeData (Menu menuIndex menuItems menuItemActions))) (VtyEvent (V.EvKey key []))
+-- In home screen and pause screen (those which have menus)
+-- toggle 
+handleEvent (Home (HomeData menu)) (AppEvent FlickerArrow) = do
+  liftIO $ print (_arrowStatus menu)
+  continue $ Home $ HomeData $ menu { _arrowStatus = toggle $ _arrowStatus menu
+                                    }
+  -- liftIO $ putStrLn $ _arrowStatus menu
+
+handleEvent (Pause pauseData@(PauseData _ menu)) (AppEvent FlickerArrow) =
+  continue $ Pause $ pauseData
+    { _menu = menu { _arrowStatus = toggle $ _arrowStatus menu }
+    }
+
+
+
+handleEvent game@(Home (HomeData menu@(Menu curMenuItemIndex menuItems menuItemActions _))) (VtyEvent (V.EvKey key []))
   = case key of
-    KUp -> continue $ Home $ HomeData $ Menu
-      (bound (menuIndex - 1) 0 (length menuItems - 1))
-      menuItems
-      menuItemActions
-    KDown -> continue $ Home $ HomeData $ Menu
-      (bound (menuIndex + 1) 0 (length menuItems - 1))
-      menuItems
-      menuItemActions
-    KEnter -> (menuItemActions !! menuIndex) game
+    KUp -> continue $ Home $ HomeData $ menu
+      { _curMenuItemIndex = bound (curMenuItemIndex - 1)
+                                  0
+                                  (length menuItems - 1)
+      }
+    KDown -> continue $ Home $ HomeData $ menu
+      { _curMenuItemIndex = bound (curMenuItemIndex + 1)
+                                  0
+                                  (length menuItems - 1)
+      }
+    KEnter -> (menuItemActions !! curMenuItemIndex) game
     _      -> continue game
 
 handleEvent game@(Play playData) (VtyEvent (V.EvKey key [])) = case key of
@@ -68,21 +82,24 @@ handleEvent game@(Play playData) (VtyEvent (V.EvKey key [])) = case key of
   KEsc   -> continue $ Pause $ PauseData playData pauseMenu
   _      -> continue game
 
-handleEvent game@(Pause (PauseData playData (Menu menuIndex menuItems menuItemActions))) (VtyEvent (V.EvKey key []))
+handleEvent game@(Pause (PauseData playData menu@(Menu curMenuItemIndex menuItems menuItemActions _))) (VtyEvent (V.EvKey key []))
   = case key of
     KUp -> continue $ Pause $ PauseData
       playData
-      (Menu (bound (menuIndex - 1) 0 (length menuItems - 1))
-            menuItems
-            menuItemActions
-      )
+      menu
+        { _curMenuItemIndex = bound (curMenuItemIndex - 1)
+                                    0
+                                    (length menuItems - 1)
+        }
+
     KDown -> continue $ Pause $ PauseData
       playData
-      (Menu (bound (menuIndex + 1) 0 (length menuItems - 1))
-            menuItems
-            menuItemActions
-      )
-    KEnter -> (menuItemActions !! menuIndex) game
+      menu
+        { _curMenuItemIndex = bound (curMenuItemIndex + 1)
+                                    0
+                                    (length menuItems - 1)
+        }
+    KEnter -> (menuItemActions !! curMenuItemIndex) game
     _      -> continue game
 
 handleEvent g _ = continue g
