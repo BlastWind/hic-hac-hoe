@@ -1,5 +1,5 @@
 module HumanGame
-    ( startHumanGame
+    ( startHumanGame, initialGrid
     ) where
 import           Brick                          ( App(..)
                                                 , BrickEvent(..)
@@ -41,10 +41,7 @@ handleEvent g _ = continue g
 
 initGame :: IO Game
 initGame = return $ Game
-    { _grid              = [ [Nothing, Nothing, Nothing]
-                           , [Nothing, Nothing, Nothing]
-                           , [Nothing, Nothing, Nothing]
-                           ]
+    { _grid              = initialGrid
     , _highlightLocation = (1, 0)
     , _curPlayer         = Player1
     , _done              = False
