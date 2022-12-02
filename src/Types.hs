@@ -1,6 +1,7 @@
+-- Data types and type transformation functions
 module Types (module Types) where
     data Player = Player1 | Player2 deriving (Show)
-    data TileType = O | X
+    data TileType = O | X deriving (Show, Eq)
     type Tile = Maybe TileType
     type Grid = [[Tile]]
 
@@ -14,6 +15,13 @@ module Types (module Types) where
     data Game = Game { _grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _done :: Bool, _stat :: Stat }
     data Direction = Up | Down | Left | Right
 
-    instance Show TileType where
-      show O = "O"
-      show X = "X"
+    class Togglable a where
+        toggle :: a -> a
+
+    instance Togglable Player where
+        toggle Player1 = Player2
+        toggle Player2 = Player1
+
+    playerToTileType :: Player -> TileType
+    playerToTileType Player1 = X
+    playerToTileType Player2 = O

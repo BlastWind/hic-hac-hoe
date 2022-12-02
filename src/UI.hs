@@ -57,7 +57,7 @@ drawGrid game =
 
 drawPlayerTurn :: Player -> Widget ()
 drawPlayerTurn player =
-    B.borderWithLabel (str "Current") $ padAll 1 $ str $ show player
+    B.borderWithLabel (str "Current") $ padLeftRight 3 $ padTopBottom 1 $ str $ show $ playerToTileType player
 
 drawStat :: Stat -> Widget ()
 drawStat (player1Score, player2Score, matchesPlayed) =
