@@ -14,11 +14,14 @@ module Types (module Types) where
     type Stat = (Player1Score, Player2Score, MatchesPlayed)
     
     type MenuItemIndex = Int
-    -- Screen type and some data to render screen with
-    data Screen = Home { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> EventM () (Next Game)] } | Play | Pause { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> EventM () (Next Game)] } 
 
-    data Game = Game { _grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _done :: Bool, _stat :: Stat, _screen :: Screen }
-    data GameDirection = GameUp | GameDown | GameLeft | GameRight
+    data Menu = Menu { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> EventM () (Next Game)] }
+    newtype HomeData = HomeData Menu
+    data PauseData = PauseData {_lastPlay :: PlayData, _menu :: Menu}
+    data PlayData = PlayData {_grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _stat :: Stat} 
+
+    data Game = Home HomeData | Play PlayData | Pause PauseData
+    data PlayDirection = Up | Down | Left | Right
 
     class Togglable a where
         toggle :: a -> a

@@ -28,15 +28,15 @@ tictactoeAttrMap = attrMap V.defAttr [(highlightBorderAttr, U.fg V.cyan)]
 printTile :: Tile -> String
 printTile = maybe " " show
 
-drawGrid :: Game -> Widget () -- Can't just take in Grid because drawGrid also depends on highlightLocation
-drawGrid game =
+drawGrid :: PlayData -> Widget () -- Can't just take in Grid because drawGrid also depends on highlightLocation
+drawGrid (PlayData grid highlightLocation _ _) =
     withBorderStyle BS.unicodeBold
         $ B.borderWithLabel (str "Tic Tac Toe")
         $ vBox columnWidgets
   where
     columnWidgets =
         [ makeRowWidgets rowTiles rowInd
-        | (rowTiles, rowInd) <- zip (_grid game) [(0 :: Int) ..]
+        | (rowTiles, rowInd) <- zip grid [(0 :: Int) ..]
         ]
     makeRowWidgets rowTiles rowInd =
         hLimit 27
@@ -54,7 +54,7 @@ drawGrid game =
             $ padAll 1
             $ str
             $ printTile tile
-        where shouldHighlight = (rowInd, colInd) == _highlightLocation game
+        where shouldHighlight = (rowInd, colInd) == highlightLocation
 
 drawPlayerTurn :: Player -> Widget ()
 drawPlayerTurn player =
@@ -78,57 +78,52 @@ drawStat (player1Score, player2Score, matchesPlayed) =
         ]
 
 drawUI :: Game -> [Widget ()]
-drawUI game = case _screen game of
-    (Home itemInd options _) ->
-        [ center $ hLimit 30 $ vLimit 20 $ B.border $ padAll 2 $ vBox
-              [ str "Welcome to Hic Hac Hoe"
-              , padTop (Pad 1)
-              $ hCenter
-              $ B.borderWithLabel (str "Menu")
-              $ padLeftRight
-                    3
-                    (vBox
-                        (map
-                            ( padTopBottom 1
-                            . str
-                            . (\(ind, s) -> if ind == itemInd
-                                  then "-> " ++ s
-                                  else "   " ++ s -- still want to maintain spacing
-                              )
+drawUI (Home (HomeData (Menu itemInd options _))) =
+    [ center $ hLimit 30 $ vLimit 20 $ B.border $ padAll 2 $ vBox
+          [ str "Welcome to Hic Hac Hoe"
+          , padTop (Pad 1)
+          $ hCenter
+          $ B.borderWithLabel (str "Menu")
+          $ padLeftRight
+                3
+                (vBox
+                    (map
+                        ( padTopBottom 1
+                        . str
+                        . (\(ind, s) -> if ind == itemInd
+                              then "-> " ++ s
+                              else "   " ++ s -- still want to maintain spacing
+                          )
+                        )
+                        (enumerate options)
+                    )
+                )
+          ]
+    ]
+    
+drawUI (Play playData@(PlayData _ _ curPlayer stat)) =
+    [center $ drawPlayerTurn curPlayer <+> drawGrid playData <+> drawStat stat]
+
+drawUI (Pause (PauseData playData@(PlayData _ _ curPlayer stat) (Menu itemInd options _)))
+    = [ center
+            $   drawPlayerTurn curPlayer
+            <+> (drawGrid playData <=> B.borderWithLabel
+                    (str "Menu")
+                    (padLeftRight
+                        3
+                        (vBox
+                            (map
+                                ( padTopBottom 1
+                                . str
+                                . (\(ind, s) -> if ind == itemInd
+                                      then "-> " ++ s
+                                      else "   " ++ s -- still want to maintain spacing
+                                  )
+                                )
+                                (enumerate options)
                             )
-                            (enumerate options)
                         )
                     )
-              ]
-        ]
-    Play ->
-        [ center
-              $   drawPlayerTurn (_curPlayer game)
-              <+> drawGrid game
-              <+> drawStat (_stat game)
-        ]
-    (Pause itemInd options _) -> -- The Pause screen actually draws Play screen as well.
-        [ center
-              $   drawPlayerTurn (_curPlayer game)
-              <+> (drawGrid game <=> B.borderWithLabel
-                      (str "Menu")
-                      (padLeftRight
-                          3
-                          (vBox
-                              (map
-                                  ( padTopBottom 1
-                                  . str
-                                  . (\(ind, s) -> if ind == itemInd
-                                        then "-> " ++ s
-                                        else "   " ++ s -- still want to maintain spacing
-                                    )
-                                  )
-                                  (enumerate options)
-                              )
-                          )
-                      )
-                  )
-              <+> drawStat (_stat game)
-        ]
-
-
+                )
+            <+> drawStat stat
+      ]

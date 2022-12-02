@@ -14,7 +14,12 @@ import qualified Graphics.Vty                  as V
 import           Graphics.Vty
 import           Logic
 import           TypeConstants
-import           Types
+import           Types                          ( Game(..)
+                                                , HomeData(..)
+                                                , Menu(..)
+                                                , PauseData(PauseData)
+                                                )
+import qualified Types                         as PlayDirection
 import           UI
 
 
@@ -27,41 +32,33 @@ app = App { appDraw         = drawUI
           }
 
 handleEvent :: Game -> BrickEvent () () -> EventM () (Next Game)
-handleEvent g (VtyEvent (V.EvKey key [])) = case _screen g of -- listen to different events and do different things with respect to Screen type
-  (Home menuIndex menuItems menuItemActions) -> case key of
-    KUp -> continue $ g
-      { _screen = Home (bound (menuIndex - 1) 0 (length menuItems - 1))
-                       menuItems
-                       menuItemActions
-      }
-    KDown -> continue $ g
-      { _screen = Home (bound (menuIndex + 1) 0 (length menuItems - 1))
-                       menuItems
-                       menuItemActions
-      }
-    KEnter -> (menuItemActions !! menuIndex) g
-    _      -> continue g
-  Play -> case key of
-    KEnter -> continue $ plantMove g
-    KLeft  -> continue $ moveHighlight g Types.GameLeft
-    KRight -> continue $ moveHighlight g Types.GameRight
-    KUp    -> continue $ moveHighlight g Types.GameUp
-    KDown  -> continue $ moveHighlight g Types.GameDown
-    KEsc   -> continue g { _screen = initialPauseScreen }
-    _      -> continue g
-  (Pause menuIndex menuItems menuItemActions) -> case key of
-    KUp -> continue $ g
-      { _screen = Pause (bound (menuIndex - 1) 0 (length menuItems - 1))
-                        menuItems
-                        menuItemActions
-      }
-    KDown -> continue $ g
-      { _screen = Pause (bound (menuIndex + 1) 0 (length menuItems - 1))
-                        menuItems
-                        menuItemActions
-      }
-    KEnter -> (menuItemActions !! menuIndex) g
-    _      -> continue g
+handleEvent game@(Home (HomeData (Menu menuIndex menuItems menuItemActions))) (VtyEvent (V.EvKey key []))
+  = case key of
+    KUp -> continue $ Home $ HomeData $ Menu (bound (menuIndex - 1) 0 (length menuItems - 1)) menuItems menuItemActions
+    KDown -> continue $ Home $ HomeData $ Menu (bound (menuIndex + 1) 0 (length menuItems - 1)) menuItems menuItemActions
+    KEnter -> (menuItemActions !! menuIndex) game
+    _      -> continue game
+
+handleEvent game@(Play playData) (VtyEvent (V.EvKey key [])) = case key of
+  KEnter -> continue $ plantMove game
+  KLeft  -> continue $ moveHighlight game PlayDirection.Left
+  KRight -> continue $ moveHighlight game PlayDirection.Right
+  KUp    -> continue $ moveHighlight game PlayDirection.Up
+  KDown  -> continue $ moveHighlight game PlayDirection.Down
+  KEsc   -> continue $ Pause $ PauseData playData pauseMenu
+  _      -> continue game
+
+handleEvent game@(Pause (PauseData playData (Menu menuIndex menuItems menuItemActions))) (VtyEvent (V.EvKey key []))
+  = case key of
+    KUp -> continue $ Pause $ PauseData
+      playData
+      (Menu (bound (menuIndex - 1) 0 (length menuItems - 1)) menuItems menuItemActions)
+    KDown -> continue $ Pause $ PauseData
+      playData
+      (Menu (bound (menuIndex + 1) 0 (length menuItems - 1)) menuItems menuItemActions)
+    KEnter -> (menuItemActions !! menuIndex) game
+    _      -> continue game
+
 handleEvent g _ = continue g
 
 startHumanGame :: IO ()

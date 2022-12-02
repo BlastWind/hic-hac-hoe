@@ -2,7 +2,9 @@
 module TypeConstants
     ( module TypeConstants
     ) where
-import           Brick                          ( continue
+import           Brick                          ( EventM
+                                                , Next
+                                                , continue
                                                 , halt
                                                 )
 import           Types
@@ -12,36 +14,32 @@ initialGrid :: Grid
 --   [Nothing, Nothing, Nothing] ]
 initialGrid = replicate 3 (replicate 3 Nothing)
 
-initialHomeScreen :: Screen
-initialHomeScreen = Home
-    { _curMenuItemIndex = 0
-    , _menuItems        = ["Play", "Quit"]
-    , _menuItemActions  = [const $ continue initialPlayScreenGame, halt]
-    }
 
 initialHomeGame :: Game
-initialHomeGame = Game { _grid              = initialGrid
-                       , _highlightLocation = (0, 0)
-                       , _curPlayer         = Player1
-                       , _done              = False
-                       , _stat              = (0, 0, 0)
-                       , _screen            = initialHomeScreen
-                       }
+initialHomeGame = Home
+    (HomeData Menu
+        { _curMenuItemIndex = 0
+        , _menuItems        = ["Play", "Quit"]
+        , _menuItemActions  = [const $ continue initialPlayScreenGame, halt]
+        }
+    )
 
 initialPlayScreenGame :: Game
-initialPlayScreenGame = Game { _grid              = initialGrid
-                             , _highlightLocation = (0, 0)
-                             , _curPlayer         = Player1
-                             , _done              = False
-                             , _stat              = (0, 0, 0)
-                             , _screen            = Play
-                             }
+initialPlayScreenGame = Play
+    (PlayData { _grid              = initialGrid
+              , _highlightLocation = (0, 0)
+              , _curPlayer         = Player1
+              , _stat              = (0, 0, 0)
+              }
+    )
 
-initialPauseScreen :: Screen
-initialPauseScreen = Pause
+pauseMenu :: Menu
+pauseMenu = Menu
     { _curMenuItemIndex = 0
     , _menuItems        = ["Resume", "Return to Home"]
-    , _menuItemActions  = [ \g -> continue g { _screen = Play }
-                          , const $ continue initialHomeGame
-                          ]
+    , _menuItemActions  = [resumePlay, const $ continue initialHomeGame]
     }
+
+resumePlay :: Game -> EventM () (Next Game)
+resumePlay (Pause (PauseData lastPlay _)) = continue $ Play lastPlay
+resumePlay g                              = continue g

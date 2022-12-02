@@ -8,11 +8,11 @@ import           Data.Maybe                     ( isJust
 import           TypeConstants
 import           Types
 
-directionVector :: GameDirection -> (Coordinate, Coordinate)
-directionVector Types.GameUp    = (-1, 0)
-directionVector Types.GameRight = (0, 1)
-directionVector Types.GameDown  = (1, 0)
-directionVector Types.GameLeft  = (0, -1)
+directionVector :: PlayDirection -> (Coordinate, Coordinate)
+directionVector Types.Up    = (-1, 0)
+directionVector Types.Right = (0, 1)
+directionVector Types.Down  = (1, 0)
+directionVector Types.Left  = (0, -1)
 
 boundLoc :: Location -> Location
 boundLoc (x, y) = (bound x 0 2, bound y 0 2)
@@ -25,45 +25,52 @@ bound x lowerBound upperBound | x < lowerBound = lowerBound
 addTwoTuples :: (Int, Int) -> (Int, Int) -> (Int, Int)
 addTwoTuples (x, y) (u, v) = (x + u, y + v)
 
-moveHighlight :: Game -> GameDirection -> Game
-moveHighlight g dir = g
-    { _highlightLocation = boundLoc $ addTwoTuples (directionVector dir)
-                                                   (_highlightLocation g)
-    }
+moveHighlight :: Game -> PlayDirection -> Game
+moveHighlight (Play (PlayData grid prevHighlightLocation player stat)) dir =
+    Play PlayData
+        { _grid              = grid
+        , _curPlayer            = player
+        , _stat              = stat
+        , _highlightLocation = boundLoc $ addTwoTuples (directionVector dir)
+                                                       prevHighlightLocation
+        }
+moveHighlight g _ = g
+
 
 plantMove :: Game -> Game
-plantMove game = game { _curPlayer = finalPlayer
-                      , _done      = False
-                      , _grid      = finalGrid
-                      , _stat      = finalStat
-                      }
+plantMove (Play (PlayData prevGrid highlightLocation prevPlayer prevStat)) =
+    Play PlayData { _curPlayer         = finalPlayer
+                  , _grid              = finalGrid
+                  , _stat              = finalStat
+                  , _highlightLocation = highlightLocation
+                  }
   where
-    isMoveValid          = isNothing $ (_grid game !! plantAtX) !! plantAtY
-    (plantAtX, plantAtY) = _highlightLocation game
+    isMoveValid          = isNothing $ (prevGrid !! plantAtX) !! plantAtY
+    (plantAtX, plantAtY) = highlightLocation
     gridAfterMove        = if isMoveValid
-        then updateGrid (_grid game)
-                        (_highlightLocation game)
-                        (Just $ playerToTileType (_curPlayer game))
-        else _grid game
-    didCurPlayerWin = didPlayerWin gridAfterMove (_curPlayer game)
+        then updateGrid prevGrid
+                        highlightLocation
+                        (Just $ playerToTileType prevPlayer)
+        else prevGrid
+    didCurPlayerWin = didPlayerWin gridAfterMove prevPlayer
     isGameStuck     = not didCurPlayerWin && isGridFilled gridAfterMove
     finalGrid | didCurPlayerWin = initialGrid
               | isGameStuck     = initialGrid
               | otherwise       = gridAfterMove -- proceed as usual
-    finalPlayer | not isMoveValid = _curPlayer game
+    finalPlayer | not isMoveValid = prevPlayer
                 |
                 -- give start to winner
-                  didCurPlayerWin = _curPlayer game
-                | isGameStuck     = toggle $ _curPlayer game
-                | otherwise       = toggle $ _curPlayer game
+                  didCurPlayerWin = prevPlayer
+                | isGameStuck     = toggle $ prevPlayer
+                | otherwise       = toggle $ prevPlayer
     finalStat
-        | didCurPlayerWin = case _curPlayer game of
+        | didCurPlayerWin = case prevPlayer of
             Player1 -> (player1Score + 1, player2Score, matchesPlayed + 1)
             Player2 -> (player1Score, player2Score + 1, matchesPlayed + 1)
         | isGameStuck = (player1Score, player2Score, matchesPlayed + 1)
-        | otherwise = _stat game
-        where (player1Score, player2Score, matchesPlayed) = _stat game
-
+        | otherwise = prevStat
+        where (player1Score, player2Score, matchesPlayed) = prevStat
+plantMove g = g
 
 isGridFilled :: Grid -> Bool
 isGridFilled = all (all isJust)
