@@ -20,10 +20,13 @@ directionVector Types.GameDown  = (1, 0)
 directionVector Types.GameLeft  = (0, -1)
 
 boundLoc :: Location -> Location
-boundLoc (x, y) = (boundDigit x, boundDigit y)  where
-    boundDigit digit | digit < 0 = 0
-                     | digit > 2 = 2
-                     | otherwise = digit
+boundLoc (x, y) = (bound x 0 2, bound y 0 2)
+
+bound :: Ord a => a -> a -> a -> a
+bound x lowerBound upperBound 
+    | x < lowerBound = lowerBound
+    | x > upperBound = upperBound 
+    | otherwise = x
 
 addTwoTuples :: (Int, Int) -> (Int, Int) -> (Int, Int)
 addTwoTuples (x, y) (u, v) = (x + u, y + v)
@@ -102,6 +105,3 @@ enumerate = zip [0 ..]
 
 -------------------------- Home screen --------------------------
 data MenuDirection = MenuUp | MenuDown
-moveHomeScreenArrow :: Game -> MenuDirection -> Game
-moveHomeScreenArrow g MenuUp = g { _screen = Home 0 }
-moveHomeScreenArrow g MenuDown = g { _screen = Home 1 }

@@ -78,16 +78,13 @@ drawStat (player1Score, player2Score, matchesPlayed) =
             ]
         ]
 
-drawHome :: Screen -> Widget ()
-drawHome (Home 0) = str "jk"
-
 homeMenuOptions :: [String]
 homeMenuOptions = ["Play", "Quit"]
 
     -- vBox [hBox [str "Player 1:", str $ show player1Score], hBox [str "Player 2:", str $ show player2Score], hBox [str "Played:", str $ show matchesPlayed]] 
 drawUI :: Game -> [Widget ()]
 drawUI game = case _screen game of
-    (Home itemInd) ->
+    (Home itemInd options _) ->
         [ center
               $ hLimit 30
               $ vLimit 20
@@ -109,7 +106,7 @@ drawUI game = case _screen game of
                                     else "   " ++ s -- still want to maintain spacing
                                 )
                               )
-                              (enumerate homeMenuOptions)
+                              (enumerate options)
                           )
                       )
                 ]
@@ -120,7 +117,7 @@ drawUI game = case _screen game of
               <+> drawGrid game
               <+> drawStat (_stat game)
         ]
-    (Pause _) ->
+    (Pause {}) ->
         [ center
               $   drawPlayerTurn (_curPlayer game)
               <+> drawGrid game

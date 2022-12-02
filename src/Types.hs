@@ -12,9 +12,9 @@ module Types (module Types) where
     type MatchesPlayed = Int
     type Stat = (Player1Score, Player2Score, MatchesPlayed)
     
-    type ScreenItemIndex = Int
-    -- Screen type and corresponding screen data to render screen with
-    data Screen = Home ScreenItemIndex | Play | Pause ScreenItemIndex
+    type MenuItemIndex = Int
+    -- Screen type and some data to render screen with
+    data Screen = Home { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> Game] } | Play | Pause { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> Game] } 
 
     data Game = Game { _grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _done :: Bool, _stat :: Stat, _screen :: Screen }
     data GameDirection = GameUp | GameDown | GameLeft | GameRight
