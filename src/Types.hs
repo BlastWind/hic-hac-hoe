@@ -15,7 +15,7 @@ module Types (module Types) where
     
     type MenuItemIndex = Int
 
-    data Menu = Menu { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> EventM () (Next Game)] }
+    data Menu = Menu { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> EventM () (Next Game)]}
     newtype HomeData = HomeData Menu
     data PauseData = PauseData {_lastPlay :: PlayData, _menu :: Menu}
     data PlayData = PlayData {_grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _stat :: Stat} 
@@ -33,3 +33,5 @@ module Types (module Types) where
     playerToTileType :: Player -> TileType
     playerToTileType Player1 = X
     playerToTileType Player2 = O
+
+    data FlickerArrow = FlickerArrow

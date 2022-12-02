@@ -9,7 +9,15 @@ import           Brick                          ( App(..)
                                                 , customMain
                                                 , neverShowCursor
                                                 )
-import           Control.Monad                  ( void )
+import           Brick.BChan                    ( newBChan
+                                                , writeBChan
+                                                )
+import           Control.Concurrent             ( threadDelay )
+import           Control.Concurrent.Async       ( concurrently )
+import           Control.Monad                  ( forever
+                                                , void
+                                                )
+import           Control.Monad.IO.Class         ( liftIO )
 import qualified Graphics.Vty                  as V
 import           Graphics.Vty
 import           Logic
@@ -18,12 +26,13 @@ import           Types                          ( Game(..)
                                                 , HomeData(..)
                                                 , Menu(..)
                                                 , PauseData(PauseData)
+                                                , FlickerArrow(FlickerArrow)
                                                 )
 import qualified Types                         as PlayDirection
 import           UI
 
 
-app :: App Game () ()
+app :: App Game FlickerArrow ()
 app = App { appDraw         = drawUI
           , appChooseCursor = neverShowCursor
           , appHandleEvent  = handleEvent
@@ -31,11 +40,22 @@ app = App { appDraw         = drawUI
           , appAttrMap      = const tictactoeAttrMap
           }
 
-handleEvent :: Game -> BrickEvent () () -> EventM () (Next Game)
+handleEvent :: Game -> BrickEvent () FlickerArrow -> EventM () (Next Game)
+-- also handle when FlickerArrow comes in (flicker the arrow!)
+handleEvent game (AppEvent FlickerArrow) = do
+  liftIO $ putStrLn "df"
+  continue game
+
 handleEvent game@(Home (HomeData (Menu menuIndex menuItems menuItemActions))) (VtyEvent (V.EvKey key []))
   = case key of
-    KUp -> continue $ Home $ HomeData $ Menu (bound (menuIndex - 1) 0 (length menuItems - 1)) menuItems menuItemActions
-    KDown -> continue $ Home $ HomeData $ Menu (bound (menuIndex + 1) 0 (length menuItems - 1)) menuItems menuItemActions
+    KUp -> continue $ Home $ HomeData $ Menu
+      (bound (menuIndex - 1) 0 (length menuItems - 1))
+      menuItems
+      menuItemActions
+    KDown -> continue $ Home $ HomeData $ Menu
+      (bound (menuIndex + 1) 0 (length menuItems - 1))
+      menuItems
+      menuItemActions
     KEnter -> (menuItemActions !! menuIndex) game
     _      -> continue game
 
@@ -52,10 +72,16 @@ handleEvent game@(Pause (PauseData playData (Menu menuIndex menuItems menuItemAc
   = case key of
     KUp -> continue $ Pause $ PauseData
       playData
-      (Menu (bound (menuIndex - 1) 0 (length menuItems - 1)) menuItems menuItemActions)
+      (Menu (bound (menuIndex - 1) 0 (length menuItems - 1))
+            menuItems
+            menuItemActions
+      )
     KDown -> continue $ Pause $ PauseData
       playData
-      (Menu (bound (menuIndex + 1) 0 (length menuItems - 1)) menuItems menuItemActions)
+      (Menu (bound (menuIndex + 1) 0 (length menuItems - 1))
+            menuItems
+            menuItemActions
+      )
     KEnter -> (menuItemActions !! menuIndex) game
     _      -> continue game
 
@@ -64,8 +90,18 @@ handleEvent g _ = continue g
 startHumanGame :: IO ()
 startHumanGame = do
   initialVty <- V.mkVty V.defaultConfig
-  void $ customMain initialVty
-                    (V.mkVty V.defaultConfig)
-                    Nothing
-                    app
-                    initialHomeGame
+  chan       <- newBChan 10
+  void
+    (concurrently
+      (forever $ do
+        writeBChan chan FlickerArrow
+        threadDelay $ 1000 * 1000 -- 1000 milliseconds, or 1 second
+      )
+      (void $ customMain initialVty
+                         (V.mkVty V.defaultConfig)
+                         (Just chan)
+                         app
+                         initialHomeGame
+      )
+    )
+
