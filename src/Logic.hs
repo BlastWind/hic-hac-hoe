@@ -95,3 +95,12 @@ updateGrid grid (row, col) tile =
 
 setAt :: [a] -> Int -> a -> [a]
 setAt xs i x = take i xs ++ [x] ++ drop (i + 1) xs
+
+enumerate :: [a] -> [(Int, a)]
+enumerate = zip [0 ..]
+
+
+-------------------------- Home screen --------------------------
+moveHomeScreenArrow :: Game -> Direction -> Game
+moveHomeScreenArrow g Up = g { _screen = Home 2 }
+moveHomeScreenArrow _ _ = undefined

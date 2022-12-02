@@ -15,6 +15,7 @@ import qualified Graphics.Vty                  as V
 import           Logic
 import           Types
 import           UI
+import Graphics.Vty
 
 
 app :: App Game () ()
@@ -26,17 +27,19 @@ app = App { appDraw         = drawUI
           }
 
 handleEvent :: Game -> BrickEvent () () -> EventM () (Next Game)
-handleEvent g (VtyEvent (V.EvKey V.KEsc [])) = halt g
-handleEvent g (VtyEvent (V.EvKey V.KDown [])) =
-    continue $ moveHighlight g Types.Down
-handleEvent g (VtyEvent (V.EvKey V.KUp [])) =
-    continue $ moveHighlight g Types.Up
-handleEvent g (VtyEvent (V.EvKey V.KLeft [])) =
-    continue $ moveHighlight g Types.Left
-handleEvent g (VtyEvent (V.EvKey V.KRight [])) =
-    continue $ moveHighlight g Types.Right
-handleEvent g (VtyEvent (V.EvKey V.KEnter [])) =
-    continue $ plantMove g
+handleEvent g (VtyEvent (V.EvKey key [])) = case _screen g of
+    (Home _) -> case key of 
+      KEsc -> halt g 
+      KUp -> halt g
+      _  -> continue g
+    Play -> case key of 
+      KEnter -> continue $ plantMove g
+      KLeft -> continue $ moveHighlight g Types.Left
+      KRight -> continue $ moveHighlight g Types.Right
+      KUp -> continue $ moveHighlight g Types.Up
+      KDown -> continue $ moveHighlight g Types.Down
+      _ -> continue g
+    (Pause _) -> continue g
 handleEvent g _ = continue g
 
 initGame :: IO Game
@@ -46,6 +49,7 @@ initGame = return $ Game
     , _curPlayer         = Player1
     , _done              = False
     , _stat              = (0, 0, 0)
+    , _screen            = Home 0
     }
 
 startHumanGame :: IO ()

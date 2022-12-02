@@ -12,7 +12,11 @@ module Types (module Types) where
     type MatchesPlayed = Int
     type Stat = (Player1Score, Player2Score, MatchesPlayed)
     
-    data Game = Game { _grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _done :: Bool, _stat :: Stat }
+    type ScreenItemIndex = Int
+    -- Screen type and corresponding screen data to render screen with
+    data Screen = Home ScreenItemIndex | Play | Pause ScreenItemIndex
+
+    data Game = Game { _grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _done :: Bool, _stat :: Stat, _screen :: Screen }
     data Direction = Up | Down | Left | Right
 
     class Togglable a where
