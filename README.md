@@ -1,7 +1,7 @@
 # hic-hac-hoe
-Tic Tac Hoe in haskell. This is my first haskell project, writing this base on my knowledge from reading 2/3 of [Haskell Programming From First Principles](https://haskellbook.com/). 
+This is my first haskell project, feedbacks on source code very welcomed! Currently, this game only runs with `ghc`.
 
-I plan to iterate this whenever I learn new applicable haskell.
+See the [backlog](https://github.com/BlastWind/hic-hac-hoe/issues/5) for interesting features I plan to add to this toy.
 
-Currently looks like: 
-![hic-hac-hoe-screenshot](docs/hic-hac-hoe.png)
+Game currently looks like: 
+![hic-hac-hoe-gif](docs/demo.gif)
