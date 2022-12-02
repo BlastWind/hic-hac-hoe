@@ -78,52 +78,47 @@ drawStat (player1Score, player2Score, matchesPlayed) =
         ]
 
 drawUI :: Game -> [Widget ()]
-drawUI (Home (HomeData (Menu itemInd options _ _))) =
+drawUI (Home (HomeData menu)) =
     [ center $ hLimit 30 $ vLimit 20 $ B.border $ padAll 2 $ vBox
           [ str "Welcome to Hic Hac Hoe"
           , padTop (Pad 1)
           $ hCenter
-          $ B.borderWithLabel (str "Menu")
-          $ padLeftRight
-                3
-                (vBox
-                    (map
-                        ( padTopBottom 1
-                        . str
-                        . (\(ind, s) -> if ind == itemInd
-                              then "-> " ++ s
-                              else "   " ++ s -- still want to maintain spacing
-                          )
-                        )
-                        (enumerate options)
-                    )
-                )
+          $ drawMenu menu
           ]
     ]
-    
+
 drawUI (Play playData@(PlayData _ _ curPlayer stat)) =
     [center $ drawPlayerTurn curPlayer <+> drawGrid playData <+> drawStat stat]
 
-drawUI (Pause (PauseData playData@(PlayData _ _ curPlayer stat) (Menu itemInd options _ _)))
+drawUI (Pause (PauseData playData@(PlayData _ _ curPlayer stat) menu))
     = [ center
             $   drawPlayerTurn curPlayer
-            <+> (drawGrid playData <=> B.borderWithLabel
-                    (str "Menu")
-                    (padLeftRight
-                        3
-                        (vBox
-                            (map
-                                ( padTopBottom 1
-                                . str
-                                . (\(ind, s) -> if ind == itemInd
-                                      then "-> " ++ s
-                                      else "   " ++ s -- still want to maintain spacing
-                                  )
-                                )
-                                (enumerate options)
-                            )
-                        )
-                    )
+            <+> (drawGrid playData <=> drawMenu menu
                 )
             <+> drawStat stat
       ]
+
+drawMenu :: Menu -> Widget ()
+drawMenu (Menu itemInd options _ arrowStatus) = B.borderWithLabel
+    (str "Menu")
+    (padLeftRight
+        3
+        (vBox
+            (map
+                ( padTopBottom 1
+                . str
+                . (\(ind, s) -> if ind == itemInd
+                      then drawArrow arrowStatus ++ s
+                      else "   " ++ s -- still want to maintain spacing
+                  )
+                )
+                (enumerate options)
+            )
+        )
+    )
+
+
+
+drawArrow :: ArrowStatus -> String
+drawArrow On  = "-> "
+drawArrow Off = "   "

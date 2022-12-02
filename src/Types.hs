@@ -15,7 +15,7 @@ module Types (module Types) where
     
     type MenuItemIndex = Int
     
-    data ArrowStatus = On | Off deriving (Show) -- Could've been just a Bool alias, but let's be more precise and fun so I can write more Togglable instances
+    data ArrowStatus = On | Off deriving Eq -- Could've been just a Bool alias, but let's be more precise and fun so I can write more Togglable instances
 
     data Menu = Menu { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> EventM () (Next Game)], _arrowStatus :: ArrowStatus }
     newtype HomeData = HomeData Menu

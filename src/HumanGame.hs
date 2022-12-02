@@ -12,12 +12,12 @@ import           Brick                          ( App(..)
 import           Brick.BChan                    ( newBChan
                                                 , writeBChan
                                                 )
-import           Control.Concurrent             ( threadDelay )
-import           Control.Concurrent.Async       ( concurrently )
+import           Control.Concurrent             ( forkIO
+                                                , threadDelay
+                                                )
 import           Control.Monad                  ( forever
                                                 , void
                                                 )
-import           Control.Monad.IO.Class         ( liftIO )
 import qualified Graphics.Vty                  as V
 import           Graphics.Vty
 import           Logic
@@ -43,20 +43,14 @@ app = App { appDraw         = drawUI
 
 handleEvent :: Game -> BrickEvent () FlickerArrow -> EventM () (Next Game)
 
--- In home screen and pause screen (those which have menus)
--- toggle 
-handleEvent (Home (HomeData menu)) (AppEvent FlickerArrow) = do
-  liftIO $ print (_arrowStatus menu)
+handleEvent (Home (HomeData menu)) (AppEvent FlickerArrow) =
   continue $ Home $ HomeData $ menu { _arrowStatus = toggle $ _arrowStatus menu
                                     }
-  -- liftIO $ putStrLn $ _arrowStatus menu
 
 handleEvent (Pause pauseData@(PauseData _ menu)) (AppEvent FlickerArrow) =
   continue $ Pause $ pauseData
     { _menu = menu { _arrowStatus = toggle $ _arrowStatus menu }
     }
-
-
 
 handleEvent game@(Home (HomeData menu@(Menu curMenuItemIndex menuItems menuItemActions _))) (VtyEvent (V.EvKey key []))
   = case key of
@@ -108,17 +102,14 @@ startHumanGame :: IO ()
 startHumanGame = do
   initialVty <- V.mkVty V.defaultConfig
   chan       <- newBChan 10
-  void
-    (concurrently
-      (forever $ do
-        writeBChan chan FlickerArrow
-        threadDelay $ 1000 * 1000 -- 1000 milliseconds, or 1 second
-      )
-      (void $ customMain initialVty
-                         (V.mkVty V.defaultConfig)
-                         (Just chan)
-                         app
-                         initialHomeGame
-      )
-    )
+  backgroundForever $ do
+    writeBChan chan FlickerArrow
+    threadDelay flickerArrowFrequency
+  void $ customMain initialVty
+                    (V.mkVty V.defaultConfig)
+                    (Just chan)
+                    app
+                    initialHomeGame
 
+backgroundForever :: IO a -> IO ()
+backgroundForever a = void $ forkIO . forever $ a
