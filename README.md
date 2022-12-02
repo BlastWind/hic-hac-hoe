@@ -3,5 +3,6 @@ This is my first haskell project, feedbacks on source code very welcomed! Curren
 
 See the [backlog](https://github.com/BlastWind/hic-hac-hoe/issues/5) for interesting features I plan to add to this toy.
 
-Game currently looks like: 
+## Current State
+
 ![hic-hac-hoe-gif](docs/demo.gif)
