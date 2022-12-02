@@ -1,5 +1,6 @@
 -- Data types and type transformation functions
 module Types (module Types) where
+    import Brick (EventM, Next)
     data Player = Player1 | Player2 deriving (Show)
     data TileType = O | X deriving (Show, Eq)
     type Tile = Maybe TileType
@@ -14,7 +15,7 @@ module Types (module Types) where
     
     type MenuItemIndex = Int
     -- Screen type and some data to render screen with
-    data Screen = Home { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> Game] } | Play | Pause { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> Game] } 
+    data Screen = Home { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> EventM () (Next Game)] } | Play | Pause { _curMenuItemIndex :: MenuItemIndex, _menuItems :: [String], _menuItemActions :: [Game -> EventM () (Next Game)] } 
 
     data Game = Game { _grid :: Grid, _highlightLocation :: Location, _curPlayer :: Player, _done :: Bool, _stat :: Stat, _screen :: Screen }
     data GameDirection = GameUp | GameDown | GameLeft | GameRight

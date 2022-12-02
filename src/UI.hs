@@ -117,12 +117,28 @@ drawUI game = case _screen game of
               <+> drawGrid game
               <+> drawStat (_stat game)
         ]
-    (Pause {}) ->
+    (Pause itemInd options _) ->
         [ center
               $   drawPlayerTurn (_curPlayer game)
-              <+> drawGrid game
+              <+> (drawGrid game <=> B.borderWithLabel
+                      (str "Menu")
+                      (padLeftRight
+                          3
+                          (vBox
+                              (map
+                                  ( padTopBottom 1
+                                  . str
+                                  . (\(ind, s) -> if ind == itemInd
+                                        then "-> " ++ s
+                                        else "   " ++ s -- still want to maintain spacing
+                                    )
+                                  )
+                                  (enumerate options)
+                              )
+                          )
+                      )
+                  )
               <+> drawStat (_stat game)
-              <+> str "Paused"
         ]
 
 

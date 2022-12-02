@@ -30,9 +30,8 @@ app = App { appDraw         = drawUI
 handleEvent :: Game -> BrickEvent () () -> EventM () (Next Game)
 handleEvent g (VtyEvent (V.EvKey key [])) = case _screen g of
   (Home menuIndex menuItems menuItemActions) -> case key of
-    KEsc -> halt g
-    KUp  -> continue $ g
-      { _screen = Home (bound (menuIndex - 1) 0 (length menuItems - 1 ))
+    KUp -> continue $ g
+      { _screen = Home (bound (menuIndex - 1) 0 (length menuItems - 1))
                        menuItems
                        menuItemActions
       }
@@ -41,7 +40,7 @@ handleEvent g (VtyEvent (V.EvKey key [])) = case _screen g of
                        menuItems
                        menuItemActions
       }
-    KEnter -> continue $ (menuItemActions !! menuIndex) g
+    KEnter -> (menuItemActions !! menuIndex) g
     _      -> continue g
   Play -> case key of
     KEnter -> continue $ plantMove g
@@ -49,27 +48,62 @@ handleEvent g (VtyEvent (V.EvKey key [])) = case _screen g of
     KRight -> continue $ moveHighlight g Types.GameRight
     KUp    -> continue $ moveHighlight g Types.GameUp
     KDown  -> continue $ moveHighlight g Types.GameDown
+    KEsc   -> continue g { _screen = initialPauseScreen }
     _      -> continue g
-  (Pause{}) -> continue g
+  (Pause menuIndex menuItems menuItemActions) -> case key of
+    KUp -> continue $ g
+      { _screen = Pause (bound (menuIndex - 1) 0 (length menuItems - 1))
+                       menuItems
+                       menuItemActions
+      }
+    KDown -> continue $ g
+      { _screen = Pause (bound (menuIndex + 1) 0 (length menuItems - 1))
+                       menuItems
+                       menuItemActions
+      }
+    KEnter -> (menuItemActions !! menuIndex) g
+    _      -> continue g
 handleEvent g _ = continue g
 
-initGame :: IO Game
-initGame = return $ Game { _grid              = initialGrid
-                         , _highlightLocation = (1, 0)
-                         , _curPlayer         = Player1
-                         , _done              = False
-                         , _stat              = (0, 0, 0)
-                         , _screen            = initialHomeScreen
-                         }
-
 initialHomeScreen :: Screen
-initialHomeScreen = Home { _curMenuItemIndex = 0
-                         , _menuItems        = ["Play", "Quit"]
-                         , _menuItemActions      = [id, id]
-                         }
+initialHomeScreen = Home
+  { _curMenuItemIndex = 0
+  , _menuItems        = ["Play", "Quit"]
+  , _menuItemActions  = [const $ continue initialPlayScreenGame, halt]
+  }
+
+initialHomeGame :: Game
+initialHomeGame = Game { _grid              = initialGrid
+                       , _highlightLocation = (1, 0)
+                       , _curPlayer         = Player1
+                       , _done              = False
+                       , _stat              = (0, 0, 0)
+                       , _screen            = initialHomeScreen
+                       }
+
+initialPlayScreenGame :: Game
+initialPlayScreenGame = Game { _grid              = initialGrid
+                             , _highlightLocation = (1, 0)
+                             , _curPlayer         = Player1
+                             , _done              = False
+                             , _stat              = (0, 0, 0)
+                             , _screen            = Play
+                             }
+
+initialPauseScreen :: Screen
+initialPauseScreen = Pause
+  { _curMenuItemIndex = 0
+  , _menuItems        = ["Resume", "Return to Home"]
+  , _menuItemActions  = [ \g -> continue g { _screen = Play }
+                        , const $ continue initialHomeGame
+                        ]
+  }
 
 startHumanGame :: IO ()
 startHumanGame = do
-  g          <- initGame
   initialVty <- V.mkVty V.defaultConfig
-  void $ customMain initialVty (V.mkVty V.defaultConfig) Nothing app g
+  void $ customMain initialVty
+                    (V.mkVty V.defaultConfig)
+                    Nothing
+                    app
+                    initialHomeGame
